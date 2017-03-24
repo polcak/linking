@@ -60,11 +60,17 @@ def check_path(p, constraints):
 def create_linked(g, p, constraints):
     last = p[-1]
     paths = [p]
-    for i, n in enumerate(nx.all_neighbors(g, last)):
+    try:
+        neighbors = nx.all_neighbors(g, last)
+    except nx.exception.NetworkXError as e:
+        sys.stderr.write("%s\n" % str(e))
+        sys.exit(1)
+    for i, n in enumerate(neighbors):
         if n not in p:
             pn = p + (n,)
             if check_path(pn, constraints):
-                paths += create_linked(g, pn, constraints)
+                paths += [pn]
+            paths += create_linked(g, pn, constraints)
     return paths
 
 # Definition of linked
@@ -78,6 +84,7 @@ def linked(g, i0, constraints):
         v0 = g.node[i0]
     except KeyError as e:
         sys.stderr.write("Unknown identifier %s\n" % i0)
+        sys.exit(2)
     accepted_paths = create_linked(g, (i0,), constraints)
     return set([p[-1] for p in accepted_paths])
 
@@ -86,20 +93,25 @@ def process_args():
     parser = argparse.ArgumentParser(description="Identity linking software")
     parser.add_argument("--graph_file", "-g", help="Input graph file with identities.")
     parser.add_argument("inputid", help="The input id (type: id).", default=None)
-    parser.add_argument("--scope", "-s", type=int, choices = [1,2,3,4],
-            help="The linking scope (1-4).", default=4)
+    parser.add_argument("--scope", "-s", type=int, choices = [1,2,3,4,5,6],
+            help="The linking scope (1-6).", default=None)
     parser.add_argument("--time", "-t", type=TimeWrapper, help="Time for which to perform linkage (local TZ).")
     parser.add_argument("--max_inaccuracy", "-i", type=float, help="Maximal path inaccuracy.")
     return parser.parse_args()
 
 def setup_constraints(args):
     scope_cs = {
-            1: SpecificIdentifier,
+            1: PartialIdentityComponents,
             2: SpecificComputerOrInterface,
-            3: SpecificUser,
-            4: AllRelatedIndentifiers,
+            3: SpecificComputerOrInterfaceLoggedUser,
+            4: UsersAccessingResource,
+            5: UsersLoggedIn,
+            6: AccessedResources,
             }
-    constraints = [scope_cs[args.scope](g)]
+
+    constraints = []
+    if args.scope:
+        constraints.append(scope_cs[args.scope](g))
 
     if args.time != None:
         constraints.append(ActiveAtSpecificTime(g, args.time.get()))

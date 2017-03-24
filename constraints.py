@@ -42,74 +42,147 @@ class ConstraintFunction():
         """
         raise NotImplementedError("Abstract method called")
 
-class ScopeConstraintFunction():
-    """ A base class for scope constraint function. """
+class EdgeScopeConstraintFunction(ConstraintFunction):
+    """ This is a base class for scope constraint functions depending on edges."""
     def __init__(self, g):
         ConstraintFunction.__init__(self, g)
 
-    def _check_path_source(self, psrc):
-        """ Checks if this constraint function allows paths to start from psrc.
-        
-        Deafult implementation, returns always True.
-        """
-        return True
+    def _allow_edge(self, src, dst):
+        """ Edge conformance, abstract mehod. """
+        raise NotImplementedError("Abstract method")
 
-    def _allow_identifiers(self, src, dst):
-        """ Check for the validity of nodes on a link on a path.
-
-        @param src The current identifier on the path.
-        @param dst The following identifier on the path.
-        """
-        return True
+    def _allow_first_edge(self, src, dst):
+        """ Edge conformance, abstract mehod. """
+        raise NotImplementedError("Abstract method")
 
     def check_path(self, p):
         """ Redefines base class method. """
-        if not self._check_path_source(p[0]):
+        if len(p) <= 1:
             return False
-        for n1, n2 in zip(range(len(p)), range(1, len(p))):
-            src = p[n1]
-            dst = p[n2]
-            if not self._allow_identifiers(src, dst):
-                return False
-        return True
+        src1, dst1 = p[0:2]
+        if self._allow_first_edge(src1, dst1):
+            for n1, n2 in zip(range(1, len(p)), range(2, len(p))):
+                src = p[n1]
+                dst = p[n2]
+                if not self._allow_edge(src, dst):
+                    return False
+            return True
+        else:
+            return False
 
-class SpecificIdentifier(ScopeConstraintFunction):
-    """ A specific identifier constraint function. """
+class PartialIdentityComponents(EdgeScopeConstraintFunction):
+    """ A constraint function for Components of a partial identity. """
     def __init__(self, g):
-        ScopeConstraintFunction.__init__(self, g)
+        self.__rules = {
+            "alpha": ["alpha"],
+            "beta": ["alpha", "lambda"],
+            "gamma": ["beta"],
+            "delta": ["beta", "gamma"],
+            "lambda": ["alpha"],
+            "rho": [],
+        }
+        EdgeScopeConstraintFunction.__init__(self, g)
 
-    def _allow_identifiers(self, src, dst):
-        return self._g.node[dst]["category"] in ordering[self._g.node[src]["category"]]
+    def _allow_edge(self, src, dst):
+        return self._g.node[dst]["category"] in self.__rules[self._g.node[src]["category"]]
 
-class SpecificComputerOrInterface(ScopeConstraintFunction):
-    """ Specific computer(s) or interface(s) """
+    def _allow_first_edge(self, src, dst):
+        return self._allow_edge(src, dst)
+
+class SpecificComputerOrInterface(EdgeScopeConstraintFunction):
+    """ A constraint function for Identifiers used by a specific computer. """
     def __init__(self, g):
-        ScopeConstraintFunction.__init__(self, g)
+        self.__rules = {
+            "alpha": ["alpha"],
+            "beta": ["alpha", "gamma", "delta", "lambda"],
+            "gamma": ["beta", "delta"],
+            "delta": [],
+            "lambda": ["alpha"],
+            "rho": [],
+        }
+        EdgeScopeConstraintFunction.__init__(self, g)
 
-    def _allow_identifiers(self, src, dst):
-        return self._g.node[dst]["category"] in ordering["delta"]
+    def _allow_edge(self, src, dst):
+        return self._g.node[dst]["category"] in self.__rules[self._g.node[src]["category"]]
 
-class SpecificUser(ScopeConstraintFunction):
-    """ Specific user """
+    def _allow_first_edge(self, src, dst):
+        return self._allow_edge(src, dst)
+
+class SpecificComputerOrInterfaceLoggedUser(EdgeScopeConstraintFunction):
+    """ A constraint function for Identifiers of all computers where a specific user was authenticated or logged in. """
     def __init__(self, g):
-        ScopeConstraintFunction.__init__(self, g)
+        self.__rules_first = {
+            "alpha": [],
+            "beta": [],
+            "gamma": [],
+            "delta": ["beta", "gamma"],
+            "lambda": ["beta"],
+            "rho": [],
+        }
+        self.__specific_computer_or_interface = SpecificComputerOrInterface(g)
+        EdgeScopeConstraintFunction.__init__(self, g)
 
-    def _check_path_source(self, psrc):
-        self.__psrc_c = self._g.node[psrc]["category"]
-        self.__allow_cs = set(list(ordering[self.__psrc_c]) + [self.__psrc_c])
-        return self.__psrc_c in ["gamma", "delta"]
+    def _allow_edge(self, src, dst):
+        return self.__specific_computer_or_interface.check_path([src, dst])
 
-    def _allow_identifiers(self, src, dst):
-        return self._g.node[dst]["category"] in self.__allow_cs
+    def _allow_first_edge(self, src, dst):
+        return self._g.node[dst]["category"] in self.__rules_first[self._g.node[src]["category"]]
 
-
-class AllRelatedIndentifiers(ConstraintFunction):
-    """ All related identifiers, it accepts all paths. """
+class UsersAccessingResource(EdgeScopeConstraintFunction):
+    """ A constraint function for Identifiers of all users accessing a specific resource. """
     def __init__(self, g):
-        ConstraintFunction.__init__(self, g)
+        self.__rules_first = {
+            "alpha": [],
+            "beta": [],
+            "gamma": [],
+            "delta": [],
+            "lambda": [],
+            "rho": ["lambda"],
+        }
+        EdgeScopeConstraintFunction.__init__(self, g)
+
+    def _allow_edge(self, src, dst):
+        return False
+
+    def _allow_first_edge(self, src, dst):
+        return self._g.node[dst]["category"] in self.__rules_first[self._g.node[src]["category"]]
+
+class UsersLoggedIn(ConstraintFunction):
+    """ A constraint function for All user accounts logged in from a computer or a set of computers. """
+    def __init__(self, g):
+        self.__l2 = SpecificComputerOrInterface(g)
+        self.__l3 = SpecificComputerOrInterfaceLoggedUser(g)
+        EdgeScopeConstraintFunction.__init__(self, g)
 
     def check_path(self, p):
-        return True
+        """ @Overloads """
+        if len(p) < 2:
+            return False
+        last_src = p[-2]
+        last_dst = p[-1]
+        if self._g.node[last_src]["category"] != "beta" or self._g.node[last_dst]["category"] != "lambda":
+            return False
+        all_but_last = p[:-1]
+        return len(all_but_last) == 1 or self.__l2.check_path(all_but_last) or self.__l3.check_path(all_but_last)
+
+class AccessedResources(ConstraintFunction):
+    """ A constraint function for All accessed resources. """
+    def __init__(self, g):
+        self.__l5 = UsersLoggedIn(g)
+        EdgeScopeConstraintFunction.__init__(self, g)
+
+    def check_path(self, p):
+        """ @Overloads """
+        if len(p) < 2:
+            return False
+        last_src = p[-2]
+        last_dst = p[-1]
+        if self._g.node[last_src]["category"] != "lambda" or self._g.node[last_dst]["category"] != "rho":
+            return False
+        all_but_last = p[:-1]
+        return len(all_but_last) == 1 or self.__l5.check_path(all_but_last)
+
+
 
 class EdgeConstraintFunction(ConstraintFunction):
     """ This is a base class for constraint functions depending only on edges."""
