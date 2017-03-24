@@ -59,7 +59,7 @@ def check_path(p, constraints):
 # Helping functions for linked
 def create_linked(g, p, constraints):
     last = p[-1]
-    paths = [p]
+    paths = []
     try:
         neighbors = nx.all_neighbors(g, last)
     except nx.exception.NetworkXError as e:
@@ -74,11 +74,13 @@ def create_linked(g, p, constraints):
     return paths
 
 # Definition of linked
-def linked(g, i0, constraints):
+def linked(g, i0, add_start, constraints):
     """ Returns a list of linked identifiers.
 
     @param g The identity graph.
     @param i0 The input identifier.
+    @param add_start Adds start node to the output.
+    @param constraints An iterable of constraint functions.
     """
     try:
         v0 = g.node[i0]
@@ -86,6 +88,8 @@ def linked(g, i0, constraints):
         sys.stderr.write("Unknown identifier %s\n" % i0)
         sys.exit(2)
     accepted_paths = create_linked(g, (i0,), constraints)
+    if add_start:
+        accepted_paths.append([i0])
     return set([p[-1] for p in accepted_paths])
 
 # Argument handling
@@ -97,6 +101,7 @@ def process_args():
             help="The linking scope (1-6).", default=None)
     parser.add_argument("--time", "-t", type=TimeWrapper, help="Time for which to perform linkage (local TZ).")
     parser.add_argument("--max_inaccuracy", "-i", type=float, help="Maximal path inaccuracy.")
+    parser.add_argument("--add_self", "-a", action="store_true", help="Add the input node to the output set")
     return parser.parse_args()
 
 def setup_constraints(args):
@@ -129,7 +134,7 @@ if __name__ == "__main__":
     constraints = setup_constraints(args)
 
     if args.inputid:
-        r = linked(g, args.inputid, constraints)
+        r = linked(g, args.inputid, args.add_self, constraints)
         l = list(r)
         l.sort()
         for i in l:
