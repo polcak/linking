@@ -58,17 +58,17 @@ class EdgeScopeConstraintFunction(ConstraintFunction):
     def check_path(self, p):
         """ Redefines base class method. """
         if len(p) <= 1:
-            return False
+            return (False, False)
         src1, dst1 = p[0:2]
         if self._allow_first_edge(src1, dst1):
             for n1, n2 in zip(range(1, len(p)), range(2, len(p))):
                 src = p[n1]
                 dst = p[n2]
                 if not self._allow_edge(src, dst):
-                    return False
-            return True
+                    return (False, False)
+            return (True, True)
         else:
-            return False
+            return (False, False)
 
 class PartialIdentityComponents(EdgeScopeConstraintFunction):
     """ A constraint function for Components of a partial identity. """
@@ -123,7 +123,7 @@ class SpecificComputerOrInterfaceLoggedUser(EdgeScopeConstraintFunction):
         EdgeScopeConstraintFunction.__init__(self, g)
 
     def _allow_edge(self, src, dst):
-        return self.__specific_computer_or_interface.check_path([src, dst])
+        return self.__specific_computer_or_interface.check_path([src, dst])[0]
 
     def _allow_first_edge(self, src, dst):
         return self._g.node[dst]["category"] in self.__rules_first[self._g.node[src]["category"]]
@@ -157,13 +157,14 @@ class UsersLoggedIn(ConstraintFunction):
     def check_path(self, p):
         """ @Overloads """
         if len(p) < 2:
-            return False
+            return (False, True)
         last_src = p[-2]
         last_dst = p[-1]
         if self._g.node[last_src]["category"] != "beta" or self._g.node[last_dst]["category"] != "lambda":
-            return False
+            return (False, True)
         all_but_last = p[:-1]
-        return len(all_but_last) == 1 or self.__l2.check_path(all_but_last) or self.__l3.check_path(all_but_last)
+        return (len(all_but_last) == 1 or self.__l2.check_path(all_but_last)[0] or
+            self.__l3.check_path(all_but_last)[0], True)
 
 class AccessedResources(ConstraintFunction):
     """ A constraint function for All accessed resources. """
@@ -174,13 +175,13 @@ class AccessedResources(ConstraintFunction):
     def check_path(self, p):
         """ @Overloads """
         if len(p) < 2:
-            return False
+            return (False, True)
         last_src = p[-2]
         last_dst = p[-1]
         if self._g.node[last_src]["category"] != "lambda" or self._g.node[last_dst]["category"] != "rho":
-            return False
+            return (False, True)
         all_but_last = p[:-1]
-        return len(all_but_last) == 1 or self.__l5.check_path(all_but_last)
+        return (len(all_but_last) == 1 or self.__l5.check_path(all_but_last)[0], True)
 
 
 
@@ -206,8 +207,8 @@ class EdgeConstraintFunction(ConstraintFunction):
             src = p[n1]
             dst = p[n2]
             if not self.__check_link(src, dst):
-                return False
-        return True
+                return (False, False)
+        return (True, True)
 
 class ActiveAtSpecificTime(EdgeConstraintFunction):
     """ All  """
@@ -244,6 +245,7 @@ class MaximalPathInaccuracy(ConstraintFunction):
 
     def check_path(self, p):
         """ Redefines base class method. """
-        return self.__compute_min_inaccuracy(p) <= self._max_inaccuracy
+        res = self.__compute_min_inaccuracy(p) <= self._max_inaccuracy
+        return (res, res)
 
 

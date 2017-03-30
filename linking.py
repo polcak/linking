@@ -49,12 +49,19 @@ def load_graph(gml_file):
 def check_path(p, constraints):
     """ Applies all constraints on the path.
 
-    Returns True iff all constraints return True.
+    Returns 2-tuple:
+     * 1st item: True iff all constraints return True.
+     * 2nd item: True iff any constraints return True.
     """
+    res_valid = True
+    res_cont = False
     for c in constraints:
-        if not c.check_path(p):
-            return False
-    return True
+        valid, cont = c.check_path(p)
+        if not valid:
+            res_valid = False
+        if cont:
+            res_cont = True
+    return (res_valid, res_cont)
 
 # Helping functions for linked
 def create_linked(g, p, constraints):
@@ -68,9 +75,11 @@ def create_linked(g, p, constraints):
     for i, n in enumerate(neighbors):
         if n not in p:
             pn = p + (n,)
-            if check_path(pn, constraints):
+            valid, cont = check_path(pn, constraints)
+            if valid:
                 paths += [pn]
-            paths += create_linked(g, pn, constraints)
+            if cont:
+                paths += create_linked(g, pn, constraints)
     return paths
 
 # Definition of linked
