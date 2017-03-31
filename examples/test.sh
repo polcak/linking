@@ -83,6 +83,65 @@ IRC channel: foo
 COMPARE
 
 
+echo "IRC2: IPv4: 10.0.0.1 -s 1"
+../linking.py -g irc2.gml "IPv4: 10.0.0.1" -s 1 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+TCP: 10.0.0.1:1234 <-> 172.16.1.7:7000
+COMPARE
+
+
+echo "IRC2: IPv4: 10.0.0.1 -s 2"
+../linking.py -g irc2.gml "IPv4: 10.0.0.1" -s 2 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+TCP: 10.0.0.1:1234 <-> 172.16.1.7:7000
+COMPARE
+
+
+echo "IRC2: IRC nickname: Alice -s 3"
+../linking.py -g irc2.gml "IRC nickname: Alice" -s 3 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1
+IPv4: 192.168.1.1
+TCP: 10.0.0.1:1234 <-> 172.16.1.7:7000
+TCP: 192.168.1.1:1122 <-> 172.16.1.7:7000
+COMPARE
+
+
+echo "IRC2: IRC channel: foo -s 4"
+../linking.py -g irc2.gml "IRC channel: foo" -s 4 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC nickname: Alice
+COMPARE
+
+
+echo "IRC2: IPv4: 10.0.0.1 -s 5"
+../linking.py -g irc2.gml "IPv4: 10.0.0.1" -s 5 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC nickname: Alice
+COMPARE
+
+
+echo "IRC2: IPv4: 10.0.0.1 -s 6"
+../linking.py -g irc2.gml "IPv4: 10.0.0.1" -s 6 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC channel: moo
+COMPARE
+
+echo "IRC2: IPv4: 10.0.0.1 -s 6 -t 5"
+../linking.py -g irc2.gml "IPv4: 10.0.0.1" -s 6 -t 5 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC channel: moo
+COMPARE
+
+
+
 echo "Inaccuracy: 5"
 ../linking.py -g inaccuracy.gml "IPv6: 2001:db8::1" -i 5 > "$TMPFILE"
 

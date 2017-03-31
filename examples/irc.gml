@@ -1,5 +1,5 @@
 graph [
-    comment "This is an example graph based on B.2 in the Ph.D. thesis"
+    comment "This is an example graph based on B.2 in the Ph.D. thesis (first example)"
     directed 0
     multigraph 1
     node [
@@ -55,6 +55,14 @@ graph [
         inaccuracy 0
     ]
     edge [
+        source 1
+        target 7
+        identitysource "IRC parser"
+        validfrom 1483268459
+        validto 1483272059
+        inaccuracy 0
+    ]
+    edge [
         source 3
         target 5
         identitysource "IRC parser"
@@ -81,6 +89,14 @@ graph [
     edge [
         source 2
         target 6
+        identitysource "IRC parser"
+        validfrom 1483268459
+        validto 1483272059
+        inaccuracy 0
+    ]
+    edge [
+        source 2
+        target 7
         identitysource "IRC parser"
         validfrom 1483268459
         validto 1483272059
