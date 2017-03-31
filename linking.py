@@ -51,16 +51,16 @@ def check_path(p, constraints):
 
     Returns 2-tuple:
      * 1st item: True iff all constraints return True.
-     * 2nd item: True iff any constraints return True.
+     * 2nd item: True iff all constraints return True.
     """
     res_valid = True
-    res_cont = False
+    res_cont = True
     for c in constraints:
         valid, cont = c.check_path(p)
         if not valid:
             res_valid = False
-        if cont:
-            res_cont = True
+        if not cont:
+            res_cont = False
     return (res_valid, res_cont)
 
 # Helping functions for linked
