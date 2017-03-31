@@ -94,8 +94,8 @@ class SpecificComputerOrInterface(EdgeScopeConstraintFunction):
     def __init__(self, g):
         self.__rules = {
             "alpha": ["alpha"],
-            "beta": ["alpha", "gamma", "delta"],
-            "gamma": ["beta", "delta"],
+            "beta": ["alpha", "gamma"],
+            "gamma": ["beta"],
             "delta": [],
             "lambda": [],
             "rho": [],

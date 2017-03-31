@@ -33,7 +33,6 @@ echo "PPP_RADIUS: IPv4: 10.0.0.1 -s 2"
 diff "$TMPFILE" - <<- COMPARE
 IPv6: 2001:db8::1
 MAC: aa:bb:cc:00:11:22
-RadiusLogin: JohnDoe
 COMPARE
 
 echo "PPP_RADIUS: RadiusLogin: JohnDoe -s 3"
@@ -45,7 +44,6 @@ IPv4: 10.11.12.1
 IPv6: 2001:db8::1
 MAC: aa:bb:cc:00:11:22
 MAC: aa:bb:cc:55:66:77
-PPPLogin: JohnDoe
 COMPARE
 
 
