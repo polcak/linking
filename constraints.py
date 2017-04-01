@@ -150,6 +150,14 @@ class UsersAccessingResource(EdgeScopeConstraintFunction):
 class UsersLoggedIn(ConstraintFunction):
     """ A constraint function for All user accounts logged in from a computer or a set of computers. """
     def __init__(self, g):
+        self.__rules_last = {
+            "alpha": [],
+            "beta": ["delta", "lambda"],
+            "gamma": ["delta"],
+            "delta": [],
+            "lambda": [],
+            "rho": ["lambda"],
+        }
         self.__l2 = SpecificComputerOrInterface(g)
         self.__l3 = SpecificComputerOrInterfaceLoggedUser(g)
         EdgeScopeConstraintFunction.__init__(self, g)
@@ -160,7 +168,8 @@ class UsersLoggedIn(ConstraintFunction):
             return (False, True)
         last_src = p[-2]
         last_dst = p[-1]
-        if self._g.node[last_src]["category"] != "beta" or self._g.node[last_dst]["category"] != "lambda":
+        if self._g.node[last_dst]["category"] not in \
+            self.__rules_last[self._g.node[last_src]["category"]]:
             return (False, True)
         all_but_last = p[:-1]
         return (len(all_but_last) == 1 or self.__l2.check_path(all_but_last)[0] or

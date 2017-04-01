@@ -46,6 +46,14 @@ MAC: aa:bb:cc:00:11:22
 MAC: aa:bb:cc:55:66:77
 COMPARE
 
+echo "PPP_RADIUS: IPv4: 10.11.12.1 -s 5"
+../linking.py -g ppp_radius.gml "IPv4: 10.11.12.1" -s 5 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+PPPLogin: JohnDoe
+RadiusLogin: JohnDoe
+COMPARE
+
 
 echo "IRC: IRC nickname: Bob -s 3"
 ../linking.py -g irc.gml "IRC nickname: Bob" -s 3 > "$TMPFILE"
