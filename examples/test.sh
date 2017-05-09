@@ -12,8 +12,53 @@ IPv6: 2001:db8::1
 MAC: aa:bb:cc:00:11:22
 COMPARE
 
-echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -t 2017-01-01T12:55"
-../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -t 2017-01-01T12:55 > "$TMPFILE"
+echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -b 2017-01-01T12:55 -e 2017-01-01T12:55"
+../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -b 2017-01-01T12:55 -e 2017-01-01T12:55 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1
+IPv4: 10.11.12.1
+MAC: aa:bb:cc:00:11:22
+COMPARE
+
+echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -b 2017-01-01T12:10 -e 2017-01-01T12:55 -t 1"
+../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -b 2017-01-01T12:10 -e 2017-01-01T12:55 -t 1 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1
+MAC: aa:bb:cc:00:11:22
+COMPARE
+
+echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -b 2017-01-01T12:10 -e 2017-01-01T12:55 -t 2"
+../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -b 2017-01-01T12:10 -e 2017-01-01T12:55 -t 2 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1
+IPv4: 10.11.12.1
+IPv6: 2001:db8::1
+MAC: aa:bb:cc:00:11:22
+COMPARE
+
+echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -b 2017-01-01T12:10 -e 2017-01-01T12:10 -t 2"
+../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -b 2017-01-01T12:10 -e 2017-01-01T12:10 -t 2 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1
+IPv6: 2001:db8::1
+MAC: aa:bb:cc:00:11:22
+COMPARE
+
+echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -b 2017-01-01T12:30 -e 2017-01-01T12:30 -t 2"
+../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -b 2017-01-01T12:30 -e 2017-01-01T12:30 -t 2 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1
+IPv6: 2001:db8::1
+MAC: aa:bb:cc:00:11:22
+COMPARE
+
+echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -b 2017-01-01T12:50 -e 2017-01-01T12:50 -t 2"
+../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -b 2017-01-01T12:50 -e 2017-01-01T12:50 -t 2 > "$TMPFILE"
 
 diff "$TMPFILE" - <<- COMPARE
 IPv4: 10.0.0.1
@@ -139,8 +184,8 @@ diff "$TMPFILE" - <<- COMPARE
 IRC channel: moo
 COMPARE
 
-echo "IRC2: IPv4: 10.0.0.1 -s 6 -t 5"
-../linking.py -g irc2.gml "IPv4: 10.0.0.1" -s 6 -t 5 > "$TMPFILE"
+echo "IRC2: IPv4: 10.0.0.1 -s 6 -b 5 -e 5"
+../linking.py -g irc2.gml "IPv4: 10.0.0.1" -s 6 -b 5 -e 5 > "$TMPFILE"
 
 diff "$TMPFILE" - <<- COMPARE
 IRC channel: moo

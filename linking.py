@@ -108,8 +108,12 @@ def process_args():
     parser.add_argument("inputid", help="The input id (type: id).", default=None)
     parser.add_argument("--scope", "-s", type=int, choices = [1,2,3,4,5,6],
             help="The linking scope (1-6).", default=None)
-    parser.add_argument("--time", "-t", type=TimeWrapper, help="Time for which to perform linkage (local TZ).")
+    parser.add_argument("--begintime", "-b", type=TimeWrapper, help="Begin time for which to perform linkage (local TZ).")
+    parser.add_argument("--endtime", "-e", type=TimeWrapper, help="End time for which to perform linkage (local TZ).")
+    parser.add_argument("--timescope", "-t", type=int, choices = [1,2],
+            help="Time scope (1-2).", default=None)
     parser.add_argument("--max_inaccuracy", "-i", type=float, help="Maximal path inaccuracy.")
+    parser.add_argument("--components", "-c", action="store_true", help="Compute the number of components in the graph.")
     parser.add_argument("--add_self", "-a", action="store_true", help="Add the input node to the output set")
     return parser.parse_args()
 
@@ -122,13 +126,30 @@ def setup_constraints(args):
             5: UsersLoggedIn,
             6: AccessedResources,
             }
+    time_scope_cs = {
+            1: ActiveContinuouslyDuring,
+            2: ActiveDuringTime,
+            }
 
     constraints = []
     if args.scope:
         constraints.append(scope_cs[args.scope](g))
 
-    if args.time != None:
-        constraints.append(ActiveAtSpecificTime(g, args.time.get()))
+    if args.timescope != None:
+        if args.begintime:
+            if args.endtime:
+                constraints.append(time_scope_cs[args.timescope](g, args.begintime.get(),
+                    args.endtime.get()))
+            else:
+                constraints.append(time_scope_cs[args.timescope](g, args.begintime.get(),
+                    args.begintime.get()))
+        else:
+            raise NotImplementedError("Time scope set but no begin time entered")
+    elif args.begintime:
+        if args.endtime:
+            constraints.append(ActiveContinuouslyDuring(g, args.begintime.get(), args.endtime.get()))
+        else:
+            constraints.append(ActiveContinuouslyDuring(g, args.begintime.get(), args.begintime.get()))
 
     if args.max_inaccuracy != None:
         constraints.append(MaximalPathInaccuracy(g, args.max_inaccuracy))
@@ -141,6 +162,9 @@ if __name__ == "__main__":
 
     g = load_graph(args.graph_file)
     constraints = setup_constraints(args)
+
+    if args.components:
+        print("Number of components: %d" % nx.number_connected_components(g))
 
     if args.inputid:
         r = linked(g, args.inputid, args.add_self, constraints)

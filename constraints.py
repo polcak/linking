@@ -222,15 +222,48 @@ class EdgeConstraintFunction(ConstraintFunction):
                 return (False, False)
         return (True, True)
 
-class ActiveAtSpecificTime(EdgeConstraintFunction):
-    """ All  """
-    def __init__(self, g, ref_time):
+class ActiveContinuouslyDuring(EdgeConstraintFunction):
+    """ All edges along the path have to be active during the whole duration. """
+    def __init__(self, g, b_time, e_time):
         EdgeConstraintFunction.__init__(self, g)
-        self.__ref_time = ref_time
+        self.__b_time = b_time
+        self.__e_time = e_time
 
     def _allow_edge(self, validfrom, validto, identitysource, inaccuracy):
         """ Defines base class abstract method. """
-        return self.__ref_time >= validfrom and self.__ref_time <= validto
+        return validfrom <= self.__b_time and validto >= self.__e_time
+
+class ActiveDuringTime(ConstraintFunction):
+    """ Identifiers have to be linkable for at least a moment during the given duration. """
+    def __init__(self, g, b_time, e_time):
+        ConstraintFunction.__init__(self, g)
+        self.__b_time = b_time
+        self.__e_time = e_time
+
+    def _check_path(self, p, prevstart, prevend):
+        src = p[0]
+        dst = p[1]
+        for i, e in self._g.edge[src][dst].items():
+            r = self._check_edge_and_following(p[1:], prevstart, prevend, **e)
+            if r:
+                return True
+        return False
+
+    def _check_edge_and_following(self, p, prevstart, prevend, validfrom, validto, identitysource, inaccuracy):
+        s = max(self.__b_time, prevstart, validfrom)
+        e = min(self.__e_time, prevend, validto)
+        if e < s:
+            return False
+        if len(p) < 2:
+            return True
+        return self._check_path(p, validfrom, validto)
+
+    def check_path(self, p):
+        """ Redefines base class method. """
+        if len(p) < 2:
+            return (False, True)
+        r = self._check_path(p, self.__b_time, self.__e_time)
+        return (r, r)
 
 class MaximalPathInaccuracy(ConstraintFunction):
     """ Checks the path for a maximal total inaccuracy """
