@@ -191,6 +191,26 @@ diff "$TMPFILE" - <<- COMPARE
 IRC channel: moo
 COMPARE
 
+echo "IRC2: IRC nickname: Alice -s 6 -b 1 -e 1"
+../linking.py -g irc2.gml "IRC nickname: Alice" -s 6 -b 1 -e 1 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC channel: foo
+COMPARE
+
+echo "IRC2: IRC nickname: Alice -s 6 -b 3 -e 3"
+../linking.py -g irc2.gml "IRC nickname: Alice" -s 6 -b 3 -e 3 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+COMPARE
+
+echo "IRC2: IRC nickname: Alice -s 6 -b 5 -e 5"
+../linking.py -g irc2.gml "IRC nickname: Alice" -s 6 -b 5 -e 5 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC channel: moo
+COMPARE
+
 
 
 echo "Inaccuracy: 5"
