@@ -284,4 +284,66 @@ UDP: 1.2.3.4:5678 <-> 5.6.7.8:2233
 UDP: 10.0.0.1:5678 <-> 5.6.7.8:2233
 COMPARE
 
+echo "CGN -s 1 10.0.0.2"
+../linking.py -g cgn.gml -s 1 "IPv4: 10.0.0.2" > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+TCP: 1.2.3.4:1234 <-> 147.229.1.1:5060
+TCP: 1.2.3.4:5678 <-> 195.113.1.1:80
+TCP: 10.0.0.2:1234 <-> 147.229.1.1:5060
+TCP: 10.0.0.2:5678 <-> 195.113.1.1:80
+TCP: 100.64.0.1:1234 <-> 147.229.1.1:5060
+TCP: 100.64.0.1:5678 <-> 195.113.1.1:80
+COMPARE
+
+echo "CGN -s 2 10.0.0.2"
+../linking.py -g cgn.gml -s 2 "IPv4: 10.0.0.2" > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+TCP: 1.2.3.4:1234 <-> 147.229.1.1:5060
+TCP: 1.2.3.4:5678 <-> 195.113.1.1:80
+TCP: 10.0.0.2:1234 <-> 147.229.1.1:5060
+TCP: 10.0.0.2:5678 <-> 195.113.1.1:80
+TCP: 100.64.0.1:1234 <-> 147.229.1.1:5060
+TCP: 100.64.0.1:5678 <-> 195.113.1.1:80
+COMPARE
+
+echo "CGN -s 5 10.0.0.2"
+../linking.py -g cgn.gml -s 5 "IPv4: 10.0.0.2" > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+SIP account: Alice
+COMPARE
+
+echo "CGN -s 1 Alice"
+../linking.py -g cgn.gml -s 1 "SIP account: Alice" > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+TCP: 1.2.3.4:1234 <-> 147.229.1.1:5060
+TCP: 10.0.0.2:1234 <-> 147.229.1.1:5060
+TCP: 100.64.0.1:1234 <-> 147.229.1.1:5060
+COMPARE
+
+echo "CGN -s 3 Alice"
+../linking.py -g cgn.gml -s 3 "SIP account: Alice" > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.2
+TCP: 1.2.3.4:1234 <-> 147.229.1.1:5060
+TCP: 1.2.3.4:5678 <-> 195.113.1.1:80
+TCP: 10.0.0.2:1234 <-> 147.229.1.1:5060
+TCP: 10.0.0.2:5678 <-> 195.113.1.1:80
+TCP: 100.64.0.1:1234 <-> 147.229.1.1:5060
+TCP: 100.64.0.1:5678 <-> 195.113.1.1:80
+COMPARE
+
+echo "CGN -s 3 Bob"
+../linking.py -g cgn.gml -s 3 "SIP account: Bob" > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 100.64.0.2
+TCP: 1.2.3.4:2222 <-> 147.229.1.1:5060
+TCP: 100.64.0.2:2222 <-> 147.229.1.1:5060
+COMPARE
+
 rm "$TMPFILE"
