@@ -56,7 +56,7 @@ graph [
     edge [
         source 1
         target 2
-        identitysource "Automatic edge between IP address and its flowr"
+        identitysource "Automatic edge between IP address and its flow"
         validfrom 1483268459
         validto 1483272059
         inaccuracy 0
