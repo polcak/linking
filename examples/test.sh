@@ -346,4 +346,20 @@ TCP: 1.2.3.4:2222 <-> 147.229.1.1:5060
 TCP: 100.64.0.2:2222 <-> 147.229.1.1:5060
 COMPARE
 
+echo "L7 names aliases active - resources"
+../linking.py -g l7ids.gml -s 6 "IRC nickname: Alice" -i 1 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC channel: foo
+receiver e-mail: alice@example.com
+COMPARE
+
+echo "L7 names aliases deactivated - resources"
+../linking.py -g l7ids.gml -s 6 "IRC nickname: Alice" -i 0 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC channel: foo
+COMPARE
+
+
 rm "$TMPFILE"
