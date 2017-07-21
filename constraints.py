@@ -190,7 +190,7 @@ class AccessedResources(ConstraintFunction):
         last_dst = p[-1]
         if self._g.node[last_src]["category"] not in ["beta", "lambda"] or \
                 self._g.node[last_dst]["category"] != "rho":
-            return (False, True)
+            return (False, self.__l2.check_path(p) or self.__l3.check_path(p))
         all_but_last = p[:-1]
         return (len(all_but_last) == 1 or self.__l2.check_path(all_but_last)[0] or
             self.__l3.check_path(all_but_last)[0], True)
