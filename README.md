@@ -7,8 +7,10 @@ This is a README file for linking -- a tool for linking identities.
 Usage
 -----
 
-linking.py [-h] [--graph_file GRAPH_FILE] [--scope {1,2,3,4}]
-                  [--time TIME] [--max_inaccuracy MAX_INACCURACY]
+linking.py [-h] [--graph_file GRAPH_FILE] [--scope {1,2,3,4,5,6}]
+                  [--begintime BEGINTIME] [--endtime ENDTIME]
+                  [--timescope {1,2}] [--max_inaccuracy MAX_INACCURACY]
+                  [--components] [--add_self]
                   inputid
 
 Identity linking software
@@ -20,11 +22,32 @@ optional arguments:
   -h, --help            show this help message and exit
   --graph_file GRAPH_FILE, -g GRAPH_FILE
                         Input graph file with identities.
-  --scope {1,2,3,4}, -s {1,2,3,4}
-                        The linking scope (1-4).
-  --time TIME, -t TIME  Time for which to perform linkage (local TZ).
+  --scope {1,2,3,4,5,6}, -s {1,2,3,4,5,6}
+                        The linking scope (1-6): 1~ Constraints revealing
+                        components of partial identity aka Other corresponding
+                        identifiers 2~ Constraints revealing partial
+                        identities of specific computer aka Identifiers of a
+                        specific computer 3~ Constraints revealing partial
+                        identities of computers where specific user
+                        authenticated or logged in 4~ Constraints revealing
+                        identifiers of all users accessing specific resource
+                        5~ Constraints revealing all user accounts logged in
+                        or authenticated from computer or set of computers 6~
+                        Constraints revealing all accessed resources
+  --begintime BEGINTIME, -b BEGINTIME
+                        Begin time for which to perform linkage (local TZ).
+  --endtime ENDTIME, -e ENDTIME
+                        End time for which to perform linkage (local TZ).
+  --timescope {1,2}, -t {1,2}
+                        Time scope (1-2): 1~ All edges on the path have to be
+                        valid during the whole period. 2~ All edges on the
+                        path have to be valid at least once during the period
+                        [-b, -e] and the period during the previous identifier
+                        is valid on the path.
   --max_inaccuracy MAX_INACCURACY, -i MAX_INACCURACY
                         Maximal path inaccuracy.
+  --components, -c      Compute the number of components in the graph.
+  --add_self, -a        Add the input node to the output set
 
 
 
