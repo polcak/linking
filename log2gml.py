@@ -74,7 +74,7 @@ def process_args():
     parser.add_argument("--graph_file", "-g", help="Output graph file with identities.")
     parser.add_argument("--dhcp", "-d", action='append', default=[],
             help = "ISC DHCP log file(s) and parameters: file_name,year,lease_period(seconds).",
-            type = parse_isc_dhcp_arg)
+            type = parse_isc_dhcp_arg, metavar = "DHCP_LOG,YEAR,LEASE_PERIOD")
     return parser.parse_args()
 
 # Main entry
