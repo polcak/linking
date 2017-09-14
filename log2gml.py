@@ -21,7 +21,7 @@ import re
 import sys
 import time
 
-isc_dhcp_line_regex = re.compile(R"([A-Za-z]+) ([0-9]+) ([0-9]{2}:[0-9]{2}:[0-9]{2}) [a-zA-Z0-9]+ dhcpd: (DHCP[A-Z]+) (?:for|on) (\d+\.\d+\.\d+\.\d+) (?:from|to) ([a-fA-F0-9:]+)")
+isc_dhcp_line_regex = re.compile(R"([A-Za-z]+) ([0-9]+) ([0-9]{2}:[0-9]{2}:[0-9]{2}) [a-zA-Z0-9]+ dhcpd: DHCP(ACK|RELEASE) (?:on|of) (\d+\.\d+\.\d+\.\d+) (?:from|to) ([a-fA-F0-9:]+)")
 isc_dhcp_months = {
         "Jan": 1,
         "Feb": 2,
@@ -73,6 +73,27 @@ def add_edge(g, source, destination, identitysource, validfrom, validto, inaccur
             validfrom = validfrom, validto = validto,
             inaccuracy = inaccuracy)
 
+def stop_edge(g, source, destination, identitysource, time, inaccuracy):
+    """ Stops ongoing edge at time t.
+
+    For now, it is sufficient to call add_edge.
+    """
+    add_edge(g, source, destination, identitysource, time, time, inaccuracy)
+
+def make_isc_dhcp_time(match, year):
+    """ Create Unix timestamp for the ISC DHCP message.
+
+    @match - The match object for isc_dhcp_line_regex.
+    @year - The year of the log file.
+    """
+    month = isc_dhcp_months[match.group(1)]
+    day = int(match.group(2))
+    this_month = int(time.strftime("%m"))
+    this_day = int(time.strftime("%d"))
+    t = time.mktime(time.strptime("%d.%d.%d %s" %
+            (day, month, year, match.group(3)), "%d.%m.%Y %H:%M:%S"))
+    return t
+
 def parse_isc_dhcp_log(g, log_file, year, lease_period):
     """ ISC DHCP log parser. """
     with open(log_file, "r") as f:
@@ -81,17 +102,18 @@ def parse_isc_dhcp_log(g, log_file, year, lease_period):
             if match:
                 try:
                     msg = match.group(4)
-                    if msg == "DHCPACK":
-                        month = isc_dhcp_months[match.group(1)]
-                        day = int(match.group(2))
-                        this_month = int(time.strftime("%m"))
-                        this_day = int(time.strftime("%d"))
-                        t = time.mktime(time.strptime("%d.%d.%d %s" %
-                                (day, month, year, match.group(3)), "%d.%m.%Y %H:%M:%S"))
+                    if msg == "ACK":
+                        t = make_isc_dhcp_time(match, year)
                         ip = add_node_ip(g, match.group(5))
                         mac = add_node_mac(g, match.group(6))
                         add_edge(g, ip, mac, identitysource = log_file,
                                 validfrom = t, validto = t+lease_period, inaccuracy = 0)
+                    elif msg == "RELEASE":
+                        t = make_isc_dhcp_time(match, year)
+                        ip = add_node_ip(g, match.group(5))
+                        mac = add_node_mac(g, match.group(6))
+                        stop_edge(g, ip, mac, identitysource = log_file,
+                                time = t, inaccuracy = 0)
                 except Exception as e:
                     sys.stderr.write("Cannot parse line %s: %s" % (str(e), line)) # Note that newline is already in the line
 
