@@ -49,6 +49,30 @@ def add_node_mac(g, addr):
     g.add_node(mac, category = "gamma")
     return mac
 
+def add_edge(g, source, destination, identitysource, validfrom, validto, inaccuracy):
+    """ Adds an edge (source, destination) to the graph g.
+
+    Prolongs the validity of an existing edge if available.
+    """
+    try:
+        edges = g.edge[source][destination]
+    except Exception as e:
+        edges = {}
+    for e in edges.values():
+        if e["identitysource"] == identitysource and \
+                e["inaccuracy"] == inaccuracy:
+            if e["validto"] > validfrom > e["validfrom"]:
+                e["validto"] = validto
+                return # The edge is prolonged
+            if validfrom < e["validfrom"] < validto:
+                e["validfrom"] = validfrom
+                e["validto"] = validto
+                return # The edge starts earlier and validto is updated
+    # This is a new edge
+    g.add_edge(source, destination, identitysource = identitysource,
+            validfrom = validfrom, validto = validto,
+            inaccuracy = inaccuracy)
+
 def parse_isc_dhcp_log(g, log_file, year, lease_period):
     """ ISC DHCP log parser. """
     with open(log_file, "r") as f:
@@ -66,7 +90,7 @@ def parse_isc_dhcp_log(g, log_file, year, lease_period):
                                 (day, month, year, match.group(3)), "%d.%m.%Y %H:%M:%S"))
                         ip = add_node_ip(g, match.group(5))
                         mac = add_node_mac(g, match.group(6))
-                        g.add_edge(ip, mac, identitysource = log_file,
+                        add_edge(g, ip, mac, identitysource = log_file,
                                 validfrom = t, validto = t+lease_period, inaccuracy = 0)
                 except Exception as e:
                     sys.stderr.write("Cannot parse line %s: %s" % (str(e), line)) # Note that newline is already in the line
