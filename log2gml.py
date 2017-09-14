@@ -58,7 +58,7 @@ def parse_isc_dhcp_log(g, log_file, year, lease_period):
                         g.add_node(mac, category = "gamma")
                         g.add_edge(ip, mac, identitysource = log_file,
                                 validfrom = t, validto = t+lease_period, inaccuracy = 0)
-                except e:
+                except Exception as e:
                     sys.stderr.write("Cannot parse line %s: %s" % (str(e), line)) # Note that newline is already in the line
 
 def parse_isc_dhcp_arg(s):
