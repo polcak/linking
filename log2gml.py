@@ -37,6 +37,18 @@ isc_dhcp_months = {
         "Dec": 12,
     }
 
+def add_node_ip(g, addr):
+    """ Add the IP address addr to the graph g."""
+    ip = "IPv4: %s" % addr
+    g.add_node(ip, category = "beta")
+    return ip
+
+def add_node_mac(g, addr):
+    """ Add the MAC address addr to the graph g."""
+    mac = "MAC: %s" % addr
+    g.add_node(mac, category = "gamma")
+    return mac
+
 def parse_isc_dhcp_log(g, log_file, year, lease_period):
     """ ISC DHCP log parser. """
     with open(log_file, "r") as f:
@@ -52,10 +64,8 @@ def parse_isc_dhcp_log(g, log_file, year, lease_period):
                         this_day = int(time.strftime("%d"))
                         t = time.mktime(time.strptime("%d.%d.%d %s" %
                                 (day, month, year, match.group(3)), "%d.%m.%Y %H:%M:%S"))
-                        ip = "IPv4: %s" % match.group(5)
-                        mac = "MAC: %s" % match.group(6)
-                        g.add_node(ip, category = "beta")
-                        g.add_node(mac, category = "gamma")
+                        ip = add_node_ip(g, match.group(5))
+                        mac = add_node_mac(g, match.group(6))
                         g.add_edge(ip, mac, identitysource = log_file,
                                 validfrom = t, validto = t+lease_period, inaccuracy = 0)
                 except Exception as e:
