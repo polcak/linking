@@ -127,7 +127,7 @@ def parse_isc_dhcp_arg(s):
 # Argument handling
 def process_args():
     parser = argparse.ArgumentParser(description="Log to GML graph convertor")
-    parser.add_argument("--graph_file", "-g", help="Output graph file with identities.")
+    parser.add_argument("output_graph_file", help="The Output graph file with identities.", default=None)
     parser.add_argument("--dhcp", "-d", action='append', default=[],
             help = "ISC DHCP log file(s) and parameters: file_name,year,lease_period(seconds).",
             type = parse_isc_dhcp_arg, metavar = "DHCP_LOG,YEAR,LEASE_PERIOD")
@@ -142,4 +142,4 @@ if __name__ == "__main__":
     for d in args.dhcp:
         parse_isc_dhcp_log(g, *d)
 
-    nx.write_gml(g, args.graph_file)
+    nx.write_gml(g, args.output_graph_file)
