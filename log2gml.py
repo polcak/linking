@@ -117,6 +117,32 @@ def parse_isc_dhcp_log(g, log_file, year, lease_period):
                 except Exception as e:
                     sys.stderr.write("Cannot parse line %s: %s" % (str(e), line)) # Note that newline is already in the line
 
+def merge_multigraphs(g1, g2):
+    """ Merge MultiGraph g2 into MultiGraph g1.
+
+    Inspired by nx.compose with several modifications:
+
+    * g1 is updated instead of creation of a new graph.
+    * Multiple edges are preserved, see https://github.com/networkx/networkx/pull/2101 and linked
+    issues.
+    """
+    for n, attribs in g2.node.items():
+        g1.add_node(n, **attribs)
+    for src, dst, _, attribs_new in g2.edges_iter(keys=True, data=True):
+        already_known = False
+        if dst in g1[src]:
+            for attribs_checked in g1[src][dst].values():
+                if attribs_checked == attribs_new:
+                    already_known = True
+                    break
+        if not already_known:
+            g1.add_edge(src, dst, **attribs_new)
+
+def merge_gml_file(g, file_name):
+    """ Merge the current graph and the graph in the given GML file."""
+    g2 = nx.read_gml(file_name)
+    merge_multigraphs(g, g2)
+
 def parse_isc_dhcp_arg(s):
     """ Parses the ISC DHCP arguments and returns a tuple """
     f, year, lease_period = s.split(",")
@@ -131,6 +157,8 @@ def process_args():
     parser.add_argument("--dhcp", "-d", action='append', default=[],
             help = "ISC DHCP log file(s) and parameters: file_name,year,lease_period(seconds).",
             type = parse_isc_dhcp_arg, metavar = "DHCP_LOG,YEAR,LEASE_PERIOD")
+    parser.add_argument("--graph_file", "-g", action='append', default=[],
+            help="Input graph file(s) in the GML format used by linked.py.")
     return parser.parse_args()
 
 # Main entry
@@ -138,6 +166,9 @@ if __name__ == "__main__":
     args = process_args()
 
     g = nx.MultiGraph()
+
+    for f in args.graph_file:
+        merge_gml_file(g, f)
 
     for d in args.dhcp:
         parse_isc_dhcp_log(g, *d)
