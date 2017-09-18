@@ -69,6 +69,14 @@ optional arguments:
   -h, --help  show this help message and exit
 
 
+
+Required libraries
+------------------
+
+ * NetworkX - https://networkx.github.io/
+ * dateutil - http://labix.org/python-dateutil
+
+
 Project history
 ---------------
 
