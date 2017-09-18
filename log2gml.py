@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import itertools
 import networkx as nx
 import re
 import sys
@@ -23,6 +24,8 @@ import time
 import time_wrapper
 
 isc_dhcp_line_regex = re.compile(R"([A-Za-z]+) ([0-9]+) ([0-9]{2}:[0-9]{2}:[0-9]{2}) [a-zA-Z0-9]+ dhcpd: DHCP(ACK|RELEASE) (?:on|of) (\d+\.\d+\.\d+\.\d+) (?:from|to) ([a-fA-F0-9:]+)")
+
+clf_line_regex = re.compile(R'([^ \t]+) [^ \t]+ ([^ \t]+) \[([^]]+)\] "[A-Z]+ ([^ \t]+) HTTP/[0-9]\.[0-9]" ([0-9]+)')
 
 def add_node_ip(g, addr):
     """ Add the IP address addr to the graph g."""
@@ -35,6 +38,18 @@ def add_node_mac(g, addr):
     mac = "MAC: %s" % addr
     g.add_node(mac, category = "gamma")
     return mac
+
+def add_node_http_user(g, username):
+    """ Adds the HTTP user username to the graph g."""
+    user = "HTTP user: %s" % username
+    g.add_node(user, category = "lambda")
+    return user
+
+def add_node_url(g, url):
+    """ Adds the URL url to the graph g."""
+    url_node = "URL: %s" % url
+    g.add_node(url_node, category = "rho")
+    return url_node
 
 def add_edge(g, source, destination, identitysource, validfrom, validto, inaccuracy):
     """ Adds an edge (source, destination) to the graph g.
@@ -59,6 +74,15 @@ def add_edge(g, source, destination, identitysource, validfrom, validto, inaccur
     g.add_edge(source, destination, identitysource = identitysource,
             validfrom = validfrom, validto = validto,
             inaccuracy = inaccuracy)
+
+def add_edges(g, nodes, identitysource, validfrom, validto, inaccuracy):
+    """ Adds an edge between all nodes to the graph g.
+
+    Prolongs the validity of an existing edge if available.
+    """
+    for source, destination in itertools.combinations(nodes, 2):
+        add_edge(g, source, destination, identitysource, validfrom, validto,
+                inaccuracy)
 
 def stop_edge(g, source, destination, identitysource, time, inaccuracy):
     """ Stops ongoing edge at time t.
@@ -104,6 +128,22 @@ def parse_isc_dhcp_log(g, log_file, year, lease_period):
                 except Exception as e:
                     sys.stderr.write("Cannot parse line %s: %s" % (str(e), line)) # Note that newline is already in the line
 
+def parse_clf_log(g, log_file_name, fqdn):
+    """ Parses Common/combined log format used by HTTP(s) servers. """
+    with open(log_file_name, "r") as f:
+        for line in f:
+            match = clf_line_regex.search(line)
+            if match:
+                nodes = []
+                nodes.append(add_node_ip(g, match.group(1)))
+                user = match.group(2)
+                if user != "-":
+                    nodes.append(add_node_http_user(g, user))
+                t = time_wrapper.TimeWrapper(match.group(3)).get()
+                nodes.append(add_node_url(g, fqdn + match.group(4)))
+                add_edges(g, nodes, identitysource = log_file_name,
+                        validfrom = t, validto = t, inaccuracy = 0)
+
 def merge_multigraphs(g1, g2):
     """ Merge MultiGraph g2 into MultiGraph g1.
 
@@ -137,6 +177,11 @@ def parse_isc_dhcp_arg(s):
     lease_period = int(lease_period)
     return (f, year, lease_period)
 
+def parse_clf_arg(s):
+    """ Parses the common/combined log format arguments and returns a tuple """
+    f, fqdn = s.split(",")
+    return (f, fqdn)
+
 # Argument handling
 def process_args():
     parser = argparse.ArgumentParser(description="Log to GML graph convertor")
@@ -146,6 +191,9 @@ def process_args():
             type = parse_isc_dhcp_arg, metavar = "DHCP_LOG,YEAR,LEASE_PERIOD")
     parser.add_argument("--graph_file", "-g", action='append', default=[],
             help="Input graph file(s) in the GML format used by linked.py.")
+    parser.add_argument("--clf", "-c", action='append', default=[],
+            help="Common/combined log format log file(s) used by HTTP(s) servers, e.g. Apache, and the server FQDN.",
+            type = parse_clf_arg, metavar = "CLF_LOG,SERVER_FQDN")
     return parser.parse_args()
 
 # Main entry
@@ -159,5 +207,8 @@ if __name__ == "__main__":
 
     for d in args.dhcp:
         parse_isc_dhcp_log(g, *d)
+
+    for f, fqdn in args.clf:
+        parse_clf_log(g, f, fqdn)
 
     nx.write_gml(g, args.output_graph_file)
