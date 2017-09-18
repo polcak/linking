@@ -7,6 +7,7 @@ This is a README file for linking -- a tool for linking identities.
 Usage
 -----
 
+<pre>
 linking.py [-h] [--graph_file GRAPH_FILE] [--scope {1,2,3,4,5,6}]
                   [--begintime BEGINTIME] [--endtime ENDTIME]
                   [--timescope {1,2}] [--max_inaccuracy MAX_INACCURACY]
@@ -48,6 +49,7 @@ optional arguments:
                         Maximal path inaccuracy.
   --components, -c      Compute the number of components in the graph.
   --add_self, -a        Add the input node to the output set
+</pre>
 
 
 
