@@ -93,7 +93,9 @@ DHCP conversion example:
 ./log2gml.py -d examples/log/dhcpd-anon.log,2017,7200 network.gml
 </pre>
 
-CLF conversion example:
+CLF conversion example based on files from Security Repo by Mike Sconzo
+that is licensed under a Creative Commons Attribution 4.0 International
+License:
 
 <pre>
 wget http://www.secrepo.com/self.logs/access.log.2017-01-01.gz
