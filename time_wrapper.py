@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
+from dateutil import parser
 
 months = {
         "Jan": 1,
@@ -34,27 +35,23 @@ months = {
 class TimeWrapper():
     """ Converts various string representation of time to Unix timestamp. """
 
-    reprs = [
-            "%Y-%m-%dT%H:%M",
-            "%Y-%m-%dT%H:%M:%S",
-            "%Y-%m-%d %H:%M",
-            "%Y-%m-%d %H:%M:%S",
-            ]
-
     def __init__(self, s):
         try:
             self.v = float(s)
         except ValueError:
             self.v = None
         if not self.v:
-            for r in self.reprs:
+            t = None
+            try:
+                t = parser.parse(s)
+            except:
                 try:
-                    self.v = time.mktime(time.strptime(s, r))
-                except ValueError:
-                    continue
-                break
-            else:
+                    t = parser.parse(s.replace(":", "T", 1))
+                except:
+                    pass
+            if t == None:
                 raise ValueError("%s is not a supported time format" % s)
+            self.v = t.timestamp()
 
     def get(self):
         return self.v
