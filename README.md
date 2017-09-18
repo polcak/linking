@@ -72,6 +72,12 @@ optional arguments:
 
 
 
+Query examples
+--------------
+
+For some query examples, have a look to the examples/test.sh file.
+
+
 Required libraries
 ------------------
 
