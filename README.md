@@ -51,6 +51,117 @@ optional arguments:
   --add_self, -a        Add the input node to the output set
 </pre>
 
+<pre>
+usage: log2gml.py [-h] [--dhcp DHCP_LOG,YEAR,LEASE_PERIOD]
+                  [--graph_file GRAPH_FILE] [--clf CLF_LOG,SERVER_FQDN]
+                  output_graph_file
+
+Log to GML graph convertor
+
+positional arguments:
+  output_graph_file     The Output graph file with identities.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --dhcp DHCP_LOG,YEAR,LEASE_PERIOD, -d DHCP_LOG,YEAR,LEASE_PERIOD
+                        ISC DHCP log file(s) and parameters:
+                        file_name,year,lease_period(seconds).
+  --graph_file GRAPH_FILE, -g GRAPH_FILE
+                        Input graph file(s) in the GML format used by
+                        linked.py.
+  --clf CLF_LOG,SERVER_FQDN, -c CLF_LOG,SERVER_FQDN
+                        Common/combined log format log file(s) used by HTTP(s)
+                        servers, e.g. Apache, and the server FQDN.
+</pre>
+
+Note that log2gml.py supports multiple instances of <pre>--dhcp</pre>,
+<pre>--graph_file</pre>, and <pre>--clf</pre>.
+
+Conversion of log files to GML
+------------------------------
+
+The utility log2gml.py can convert log files to GML files compatible with
+linking.py. So far ISC DHCP daemon and HTTP common/combined log format are
+supported. Additionally, log2gml can merge multiple GML files into a single
+GML file.
+
+Feel free to develop additional convertors for different log file formats.
+
+DHCP conversion example:
+
+<pre>
+./log2gml.py -d examples/log/dhcpd-anon.log,2017,7200 network.gml
+</pre>
+
+CLF conversion example:
+
+<pre>
+wget http://www.secrepo.com/self.logs/access.log.2017-01-01.gz
+gunzip access.log.2017-01-01.gz
+wget http://www.secrepo.com/self.logs/access.log.2017-01-02.gz
+gunzip access.log.2017-01-02.gz
+./log2gml.py -c access.log.2017-01-01,www.secrepo.com -c access.log.2017-01-02,www.secrepo.com secrepo.gml
+</pre>
+
+Merging:
+
+<pre>
+./log2gml.py -g network.gml -g secrepo.gml combined.gml
+</pre>
+
+Of course, you do not nedd to create the temporary GML files if you do not need them:
+
+<pre>
+./log2gml.py -d examples/log/dhcpd-anon.log,2017,7200 -c access.log.2017-01-01,www.secrepo.com -c access.log.2017-01-02,www.secrepo.com combined.gml
+</pre>
+
+Subsequently, you can use linking.py, for example, as follows:
+
+<pre>
+./linking.py -g combined.gml "URL: www.secrepo.com/self.logs/access.log.2015-02-13.gz"
+IPv4: 163.172.64.187
+IPv4: 163.172.66.68
+IPv4: 46.229.168.69
+URL: www.secrepo.com/self.logs/access.log.2015-02-23.gz
+URL: www.secrepo.com/self.logs/access.log.2015-03-29.gz
+URL: www.secrepo.com/self.logs/access.log.2015-04-21.gz
+URL: www.secrepo.com/self.logs/access.log.2015-09-03.gz
+URL: www.secrepo.com/self.logs/access.log.2015-09-06.gz
+URL: www.secrepo.com/self.logs/access.log.2015-09-21.gz
+URL: www.secrepo.com/self.logs/access.log.2015-09-24.gz
+URL: www.secrepo.com/self.logs/access.log.2015-12-02.gz
+URL: www.secrepo.com/self.logs/access.log.2015-12-08.gz
+URL: www.secrepo.com/self.logs/access.log.2016-02-20.gz
+URL: www.secrepo.com/self.logs/access.log.2016-03-22.gz
+URL: www.secrepo.com/self.logs/access.log.2016-04-03.gz
+URL: www.secrepo.com/self.logs/access.log.2016-04-10.gz
+URL: www.secrepo.com/self.logs/access.log.2016-04-23.gz
+URL: www.secrepo.com/self.logs/access.log.2016-05-10.gz
+URL: www.secrepo.com/self.logs/access.log.2016-06-15.gz
+URL: www.secrepo.com/self.logs/access.log.2016-07-05.gz
+URL: www.secrepo.com/self.logs/access.log.2016-08-22.gz
+URL: www.secrepo.com/self.logs/access.log.2016-09-11.gz
+URL: www.secrepo.com/self.logs/access.log.2016-09-14.gz
+URL: www.secrepo.com/self.logs/error.log.2015-01-25.gz
+URL: www.secrepo.com/self.logs/error.log.2015-01-31.gz
+URL: www.secrepo.com/self.logs/error.log.2015-03-28.gz
+URL: www.secrepo.com/self.logs/error.log.2015-03-29.gz
+URL: www.secrepo.com/self.logs/error.log.2015-05-17.gz
+URL: www.secrepo.com/self.logs/error.log.2015-05-23.gz
+URL: www.secrepo.com/self.logs/error.log.2015-06-05.gz
+URL: www.secrepo.com/self.logs/error.log.2015-08-21.gz
+URL: www.secrepo.com/self.logs/error.log.2015-08-31.gz
+URL: www.secrepo.com/self.logs/error.log.2015-09-24.gz
+URL: www.secrepo.com/self.logs/error.log.2015-11-04.gz
+URL: www.secrepo.com/self.logs/error.log.2016-02-04.gz
+URL: www.secrepo.com/self.logs/error.log.2016-03-29.gz
+URL: www.secrepo.com/self.logs/error.log.2016-05-05.gz
+URL: www.secrepo.com/self.logs/error.log.2016-05-13.gz
+URL: www.secrepo.com/self.logs/error.log.2016-06-16.gz
+URL: www.secrepo.com/self.logs/error.log.2016-08-02.gz
+URL: www.secrepo.com/self.logs/error.log.2016-08-31.gz
+URL: www.secrepo.com/self.logs/error.log.2016-11-05.gz
+</pre>
 
 
 Getting GML data from PCF
