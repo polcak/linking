@@ -20,22 +20,9 @@ import networkx as nx
 import re
 import sys
 import time
+import time_wrapper
 
 isc_dhcp_line_regex = re.compile(R"([A-Za-z]+) ([0-9]+) ([0-9]{2}:[0-9]{2}:[0-9]{2}) [a-zA-Z0-9]+ dhcpd: DHCP(ACK|RELEASE) (?:on|of) (\d+\.\d+\.\d+\.\d+) (?:from|to) ([a-fA-F0-9:]+)")
-isc_dhcp_months = {
-        "Jan": 1,
-        "Feb": 2,
-        "Mar": 3,
-        "Apr": 4,
-        "May": 5,
-        "Jun": 6,
-        "Jul": 7,
-        "Aug": 8,
-        "Sep": 9,
-        "Oct": 10,
-        "Nov": 11,
-        "Dec": 12,
-    }
 
 def add_node_ip(g, addr):
     """ Add the IP address addr to the graph g."""
@@ -86,7 +73,7 @@ def make_isc_dhcp_time(match, year):
     @match - The match object for isc_dhcp_line_regex.
     @year - The year of the log file.
     """
-    month = isc_dhcp_months[match.group(1)]
+    month = time_wrapper.months[match.group(1)]
     day = int(match.group(2))
     this_month = int(time.strftime("%m"))
     this_day = int(time.strftime("%d"))
