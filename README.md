@@ -74,8 +74,8 @@ optional arguments:
                         servers, e.g. Apache, and the server FQDN.
 </pre>
 
-Note that log2gml.py supports multiple instances of <pre>--dhcp</pre>,
-<pre>--graph_file</pre>, and <pre>--clf</pre>.
+Note that log2gml.py supports multiple instances of --dhcp, --graph_file,
+and --clf.
 
 Conversion of log files to GML
 ------------------------------
