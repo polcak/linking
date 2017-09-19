@@ -37,7 +37,9 @@ def load_graph(gml_file):
     * graph.directed should be set to 0.
     * graph.multigraph should be set to 1.
     * node.label contains the unique identifier value.
-    * node.category contains the category of the node, one of the alpha, beta, gamma, delta, lambda, rho.
+    * node.category contains the category of the node, one of the alpha, beta, gamma, delta, lambda, rho;
+      alpha means L4Flow, beta means IPAddr, gamma means IfcOrComp, delta means AAAUser, lambda
+      means L7User, and rho means L7Resource.
     * edge.identitysource contains the identity source, i.e. an item from the set S.
     * edge.validfrom contains the starting time stamp in the UNIX format.
     * edge.validto contains the starting time stamp in the UNIX format.
