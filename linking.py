@@ -105,15 +105,15 @@ def linked(g, i0, add_start, constraints):
 
 scope_help = """The linking scope (1-6):
 1~ Constraints revealing components of partial identity aka
-   Other corresponding identifiers
+   Other corresponding identifiers.
 2~ Constraints revealing partial identities of specific computer aka
-   Identifiers of a specific computer
+   Identifiers of a specific computer.
 3~ Constraints revealing partial identities of computers where specific
-   user authenticated or logged in
-4~ Constraints revealing identifiers of all users accessing specific resource
+   user authenticated or logged in.
+4~ Constraints revealing identifiers of all users accessing specific resource.
 5~ Constraints revealing all user accounts logged in or authenticated from
-   computer or set of computers
-6~ Constraints revealing all accessed resources 
+   computer or set of computers.
+6~ Constraints revealing all accessed resources.
 """
 
 timescope_help = """Time scope (1-2):
