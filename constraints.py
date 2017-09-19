@@ -116,7 +116,7 @@ class SpecificComputerOrInterfaceLoggedUser(EdgeScopeConstraintFunction):
             "beta": [],
             "gamma": [],
             "delta": ["beta", "gamma"],
-            "lambda": ["beta"],
+            "lambda": ["beta", "lambda"],
             "rho": [],
         }
         self.__specific_computer_or_interface = SpecificComputerOrInterface(g)
@@ -182,27 +182,8 @@ class AccessedResources(ConstraintFunction):
         self.__l3 = SpecificComputerOrInterfaceLoggedUser(g)
         EdgeScopeConstraintFunction.__init__(self, g)
 
-    def __remove_beginning_alternate_names(self, p):
-        """ Helper functions that removes multiple lambdas at the beginning """
-        lambda_last = (self._g.node[p[0]]["category"] == "lambda")
-        if not lambda_last:
-            return p
-        ret = []
-        for x, y in zip(p, p[1:]):
-            if lambda_last:
-                if self._g.node[y]["category"] != "lambda":
-                    ret.append(x)
-                    ret.append(y)
-                    lambda_last = False
-            else:
-                ret.append(y)
-        if lambda_last:
-            ret = [p[-1]]
-        return ret
-
     def check_path(self, p):
         """ @Overloads """
-        p = self.__remove_beginning_alternate_names(p)
         if len(p) < 2:
             return (False, True)
         last_src = p[-2]
