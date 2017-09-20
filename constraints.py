@@ -14,15 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Ordering on categories
-ordering = {
-        "alpha": {},
-        "beta": {"alpha"},
-        "gamma": {"alpha", "beta"},
-        "delta": {"alpha", "beta", "gamma"},
-        "lambda": {"alpha"},
-        }
-
 # Definition of constraint functions
 class ConstraintFunction():
     """ A base class for constraint functions. """
