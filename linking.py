@@ -103,7 +103,7 @@ def linked(g, i0, add_start, constraints):
         accepted_paths.append([i0])
     return set([p[-1] for p in accepted_paths])
 
-scope_help = """The linking scope (1-6):
+scope_help = """The linking scope (1-8):
 1~ Constraints revealing components of partial
    identity aka Other corresponding identifiers.
 2~ Constraints revealing partial identities of
@@ -118,6 +118,9 @@ scope_help = """The linking scope (1-6):
    logged in or authenticated from computer or
    set of computers.
 6~ Constraints revealing all accessed resources.
+7~ Constraints revealing all login aliases.
+8~ Constraints revealing all IP addresses
+   accesing a specific resource.
 """
 
 timescope_help = """Time scope (1-2):
@@ -135,7 +138,7 @@ def process_args():
             formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--graph_file", "-g", help="Input graph file with identities.")
     parser.add_argument("inputid", help="The input id (type: id).", default=None)
-    parser.add_argument("--scope", "-s", type=int, choices = [1,2,3,4,5,6],
+    parser.add_argument("--scope", "-s", type=int, choices = [1,2,3,4,5,6,7,8],
             help=scope_help, default=None,)
     parser.add_argument("--begintime", "-b", type=TimeWrapper, help="Begin time for which to perform linkage (local TZ).")
     parser.add_argument("--endtime", "-e", type=TimeWrapper, help="End time for which to perform linkage (local TZ).")
@@ -154,6 +157,8 @@ def setup_constraints(args):
             4: UsersAccessingResource,
             5: UsersLoggedIn,
             6: AccessedResources,
+            7: Logins,
+            8: IPAddrsAccessingResource,
             }
     time_scope_cs = {
             1: ActiveContinuouslyDuring,

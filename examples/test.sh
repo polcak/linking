@@ -361,5 +361,27 @@ diff "$TMPFILE" - <<- COMPARE
 IRC channel: foo
 COMPARE
 
+echo "Scope 7"
+../linking.py -g l7ids.gml "IRC nickname: Alice" -s 7 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+e-mail: alice@example.com
+COMPARE
+
+echo "IRC: IRC channel: foo -s 8"
+../linking.py -g irc.gml "IRC channel: foo" -s 8 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1
+IPv4: 192.168.1.1
+COMPARE
+
+echo "IRC2: IRC channel: foo -s 8"
+../linking.py -g irc2.gml "IRC channel: foo" -s 8 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 192.168.1.1
+COMPARE
+
 
 rm "$TMPFILE"

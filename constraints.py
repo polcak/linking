@@ -186,6 +186,44 @@ class AccessedResources(ConstraintFunction):
         return (len(all_but_last) == 1 or self.__l2.check_path(all_but_last)[0] or
             self.__l3.check_path(all_but_last)[0], True)
 
+class Logins(EdgeScopeConstraintFunction):
+    """ A constraint function revealing all login aliases. """
+    def __init__(self, g):
+        self.__rules = {
+            "alpha": [],
+            "beta": [],
+            "gamma": [],
+            "delta": ["delta", "lambda"],
+            "lambda": ["delta", "lambda"],
+            "rho": [],
+        }
+        EdgeScopeConstraintFunction.__init__(self, g)
+
+    def _allow_edge(self, src, dst):
+        return self._g.node[dst]["category"] in self.__rules[self._g.node[src]["category"]]
+
+    def _allow_first_edge(self, src, dst):
+        return self._allow_edge(src, dst)
+
+class IPAddrsAccessingResource(EdgeScopeConstraintFunction):
+    """ A constraint function revealing IP addresses acessing a resource. """
+    def __init__(self, g):
+        self.__rules_first = {
+            "alpha": [],
+            "beta": [],
+            "gamma": [],
+            "delta": [],
+            "lambda": [],
+            "rho": ["beta"],
+        }
+        EdgeScopeConstraintFunction.__init__(self, g)
+
+    def _allow_edge(self, src, dst):
+        return False
+
+    def _allow_first_edge(self, src, dst):
+        return self._g.node[dst]["category"] in self.__rules_first[self._g.node[src]["category"]]
+
 
 
 class EdgeConstraintFunction(ConstraintFunction):
