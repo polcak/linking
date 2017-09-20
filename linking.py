@@ -133,11 +133,24 @@ timescope_help = """Time scope (1-2):
 """
 
 # Argument handling
-def process_args():
+def process_args(args, first_run):
+    help_epilog = """Use / to make a sequence of queries of arbitrary lenght, e.g.:\n
+    %(prog)s -s 1 -b '1.1.2017' -e '2.1.2017' id / -s 2 -i 5 / -s 3
+
+This makes "-s 1 -b '1.1.2017' -e '2.1.2017' id" search and for all
+found IDs id1, %(prog)s initiates search "-s 2 -i 5 id1". For all
+found IDs id2, %(prog)s initiates search "-s 3" and outputs all
+results.
+
+Note that it is necessary to list -g GRAPH_FILE before the first /.
+
+--components is not compatible with /.
+    """
     parser = argparse.ArgumentParser(description="Identity linking software",
-            formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("--graph_file", "-g", help="Input graph file with identities.")
-    parser.add_argument("inputid", help="The input id (type: id).", default=None)
+            formatter_class=argparse.RawTextHelpFormatter, epilog=help_epilog)
+    if first_run:
+        parser.add_argument("--graph_file", "-g", help="Input graph file with identities.")
+        parser.add_argument("inputid", help="The input id (type: id).", default=None)
     parser.add_argument("--scope", "-s", type=int, choices = [1,2,3,4,5,6,7,8],
             help=scope_help, default=None,)
     parser.add_argument("--begintime", "-b", type=TimeWrapper, help="Begin time for which to perform linkage (local TZ).")
@@ -145,9 +158,10 @@ def process_args():
     parser.add_argument("--timescope", "-t", type=int, choices = [1,2],
             help=timescope_help, default=None)
     parser.add_argument("--max_inaccuracy", "-i", type=float, help="Maximal path inaccuracy.")
-    parser.add_argument("--components", "-c", action="store_true", help="Compute the number of components in the graph.")
+    if first_run:
+        parser.add_argument("--components", "-c", action="store_true", help="Compute the number of components in the graph.")
     parser.add_argument("--add_self", "-a", action="store_true", help="Add the input node to the output set")
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 def setup_constraints(args):
     scope_cs = {
@@ -190,19 +204,45 @@ def setup_constraints(args):
 
     return constraints
 
-# Main entry
-if __name__ == "__main__":
-    args = process_args()
+def process_query(g, argl, cur_id):
+    args = process_args(argl, False)
 
-    g = load_graph(args.graph_file)
     constraints = setup_constraints(args)
 
+    r = linked(g, cur_id, args.add_self, constraints)
+    return set(r)
+
+# Main entry
+if __name__ == "__main__":
+    arglist = [[]]
+    for a in sys.argv[1:]:
+        if a == "/":
+            arglist.append([])
+        else:
+            arglist[-1].append(a)
+
+    # Generate graph
+    args = process_args(arglist[0], True)
+    g = load_graph(args.graph_file)
     if args.components:
         print("Number of components: %d" % nx.number_connected_components(g))
 
-    if args.inputid:
-        r = linked(g, args.inputid, args.add_self, constraints)
-        l = list(r)
-        l.sort()
-        for i in l:
-            print(i)
+    # remove -g GRAPH_FILE and inputid arguments from the first list
+    arglist[0].remove("-g")
+    arglist[0].remove(args.graph_file)
+    arglist[0].remove(args.inputid)
+
+    # Initialize working set
+    current_ids = [args.inputid]
+
+    for argl in arglist:
+        next_ids = set([])
+        for cur in current_ids:
+            next_ids.update(process_query(g, argl, cur))
+        current_ids = next_ids
+
+    # Prepare output
+    l = list(current_ids)
+    l.sort()
+    for i in l:
+        print(i)
