@@ -107,7 +107,7 @@ class SpecificComputerOrInterfaceLoggedUser(EdgeScopeConstraintFunction):
             "beta": [],
             "gamma": [],
             "delta": ["beta", "gamma"],
-            "lambda": ["beta", "lambda"],
+            "lambda": ["beta"],
             "rho": [],
         }
         self.__specific_computer_or_interface = SpecificComputerOrInterface(g)
