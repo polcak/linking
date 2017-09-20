@@ -126,49 +126,8 @@ Of course, you do not nedd to create the temporary GML files if you do not need 
 Subsequently, you can use linking.py, for example, as follows:
 
 <pre>
-./linking.py -g combined.gml "URL: www.secrepo.com/self.logs/access.log.2015-02-13.gz"
-IPv4: 163.172.64.187
-IPv4: 163.172.66.68
+./linking.py -g combined.gml "URL: www.secrepo.com/self.logs/access.log.2015-02-13.gz" -s 8
 IPv4: 46.229.168.69
-URL: www.secrepo.com/self.logs/access.log.2015-02-23.gz
-URL: www.secrepo.com/self.logs/access.log.2015-03-29.gz
-URL: www.secrepo.com/self.logs/access.log.2015-04-21.gz
-URL: www.secrepo.com/self.logs/access.log.2015-09-03.gz
-URL: www.secrepo.com/self.logs/access.log.2015-09-06.gz
-URL: www.secrepo.com/self.logs/access.log.2015-09-21.gz
-URL: www.secrepo.com/self.logs/access.log.2015-09-24.gz
-URL: www.secrepo.com/self.logs/access.log.2015-12-02.gz
-URL: www.secrepo.com/self.logs/access.log.2015-12-08.gz
-URL: www.secrepo.com/self.logs/access.log.2016-02-20.gz
-URL: www.secrepo.com/self.logs/access.log.2016-03-22.gz
-URL: www.secrepo.com/self.logs/access.log.2016-04-03.gz
-URL: www.secrepo.com/self.logs/access.log.2016-04-10.gz
-URL: www.secrepo.com/self.logs/access.log.2016-04-23.gz
-URL: www.secrepo.com/self.logs/access.log.2016-05-10.gz
-URL: www.secrepo.com/self.logs/access.log.2016-06-15.gz
-URL: www.secrepo.com/self.logs/access.log.2016-07-05.gz
-URL: www.secrepo.com/self.logs/access.log.2016-08-22.gz
-URL: www.secrepo.com/self.logs/access.log.2016-09-11.gz
-URL: www.secrepo.com/self.logs/access.log.2016-09-14.gz
-URL: www.secrepo.com/self.logs/error.log.2015-01-25.gz
-URL: www.secrepo.com/self.logs/error.log.2015-01-31.gz
-URL: www.secrepo.com/self.logs/error.log.2015-03-28.gz
-URL: www.secrepo.com/self.logs/error.log.2015-03-29.gz
-URL: www.secrepo.com/self.logs/error.log.2015-05-17.gz
-URL: www.secrepo.com/self.logs/error.log.2015-05-23.gz
-URL: www.secrepo.com/self.logs/error.log.2015-06-05.gz
-URL: www.secrepo.com/self.logs/error.log.2015-08-21.gz
-URL: www.secrepo.com/self.logs/error.log.2015-08-31.gz
-URL: www.secrepo.com/self.logs/error.log.2015-09-24.gz
-URL: www.secrepo.com/self.logs/error.log.2015-11-04.gz
-URL: www.secrepo.com/self.logs/error.log.2016-02-04.gz
-URL: www.secrepo.com/self.logs/error.log.2016-03-29.gz
-URL: www.secrepo.com/self.logs/error.log.2016-05-05.gz
-URL: www.secrepo.com/self.logs/error.log.2016-05-13.gz
-URL: www.secrepo.com/self.logs/error.log.2016-06-16.gz
-URL: www.secrepo.com/self.logs/error.log.2016-08-02.gz
-URL: www.secrepo.com/self.logs/error.log.2016-08-31.gz
-URL: www.secrepo.com/self.logs/error.log.2016-11-05.gz
 </pre>
 
 
