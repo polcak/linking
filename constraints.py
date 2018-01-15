@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from inaccuracy import compute_inaccuracy
+
 # Definition of constraint functions
 class ConstraintFunction():
     """ A base class for constraint functions. """
@@ -300,26 +302,9 @@ class MaximalPathInaccuracy(ConstraintFunction):
         ConstraintFunction.__init__(self, g)
         self._max_inaccuracy = max_inaccuracy
 
-    def __get_edge_min_inaccuracy(self, multie):
-        min_inaccuracy = None
-        for e in multie.values():
-            try:
-                min_inaccuracy = min(min_inaccuracy, e["inaccuracy"])
-            except TypeError: # No inaccuracy set, yet
-                min_inaccuracy = e["inaccuracy"]
-        return min_inaccuracy
-
-    def __compute_min_inaccuracy(self, p):
-        inaccuracy = 0
-        for n1, n2 in zip(range(len(p)), range(1, len(p))):
-            src = p[n1]
-            dst = p[n2]
-            inaccuracy += self.__get_edge_min_inaccuracy(self._g.edge[src][dst])
-        return inaccuracy
-
     def check_path(self, p):
         """ Redefines base class method. """
-        res = self.__compute_min_inaccuracy(p) <= self._max_inaccuracy
+        res = compute_inaccuracy(self._g, p) <= self._max_inaccuracy
         return (res, res)
 
 

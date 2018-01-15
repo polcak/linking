@@ -20,6 +20,8 @@ import networkx as nx
 import sys
 
 from constraints import *
+from inaccuracy import compute_inaccuracy, inaccuracy_list
+from id_attrs import id_attrs
 from time_wrapper import TimeWrapper
 
 # Helping functions
@@ -94,14 +96,15 @@ def linked(g, i0, add_start, constraints):
     @param constraints An iterable of constraint functions.
     """
     try:
-        v0 = g.node[i0]
+        v0 = g.node[i0.value]
     except KeyError as e:
-        sys.stderr.write("Unknown identifier %s\n" % i0)
+        sys.stderr.write("Unknown identifier %s\n" % i0.value)
         sys.exit(2)
-    accepted_paths = create_linked(g, (i0,), constraints)
+    accepted_paths = create_linked(g, (i0.value,), constraints)
     if add_start:
-        accepted_paths.append([i0])
-    return set([p[-1] for p in accepted_paths])
+        accepted_paths.append([i0.value])
+    return inaccuracy_list([id_attrs(p[-1], compute_inaccuracy(g, p)) \
+            for p in accepted_paths])
 
 scope_help = """The linking scope (1-8):
 1~ Constraints revealing components of partial
@@ -161,6 +164,7 @@ Note that it is necessary to list -g GRAPH_FILE before the first /.
     if first_run:
         parser.add_argument("--components", "-c", action="store_true", help="Compute the number of components in the graph.")
     parser.add_argument("--add_self", "-a", action="store_true", help="Add the input node to the output set")
+    parser.add_argument("--print_inaccuracy", "-I", action="store_true", help="Print the inaccuracy of each output node")
     return parser.parse_args(args)
 
 def setup_constraints(args):
@@ -210,7 +214,7 @@ def process_query(g, argl, cur_id):
     constraints = setup_constraints(args)
 
     r = linked(g, cur_id, args.add_self, constraints)
-    return set(r)
+    return r
 
 # Main entry
 if __name__ == "__main__":
@@ -233,16 +237,19 @@ if __name__ == "__main__":
     arglist[0].remove(args.inputid)
 
     # Initialize working set
-    current_ids = [args.inputid]
+    current_ids = [id_attrs(args.inputid, 0)]
 
     for argl in arglist:
-        next_ids = set([])
+        next_ids = inaccuracy_list([])
         for cur in current_ids:
             next_ids.update(process_query(g, argl, cur))
         current_ids = next_ids
 
     # Prepare output
-    l = list(current_ids)
+    l = list(current_ids.get_all())
     l.sort()
     for i in l:
-        print(i)
+        if args.print_inaccuracy:
+            print("%s\t%g" % (i.value, i.inaccuracy))
+        else:
+            print(i.value)

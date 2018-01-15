@@ -12,6 +12,16 @@ IPv6: 2001:db8::1
 MAC: aa:bb:cc:00:11:22
 COMPARE
 
+echo "PPP_RADIUS: -s 1 RadiusLogin: JohnDoe (print inaccuracy)"
+../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" --print_inaccuracy > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IPv4: 10.0.0.1	0
+IPv4: 10.11.12.1	0
+IPv6: 2001:db8::1	0
+MAC: aa:bb:cc:00:11:22	0
+COMPARE
+
 echo "PPP_RADIUS:  -s 1 RadiusLogin: JohnDoe -b 2017-01-01T12:55 -e 2017-01-01T12:55"
 ../linking.py -g ppp_radius.gml -s 1 "RadiusLogin: JohnDoe" -b 2017-01-01T12:55 -e 2017-01-01T12:55 > "$TMPFILE"
 
@@ -246,6 +256,18 @@ IPv6: 2001:db8::3
 COMPARE
 
 
+echo "Inaccuracy: 11 (print inaccuracy)"
+../linking.py -I -g inaccuracy.gml "IPv6: 2001:db8::1" -i 11 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+Clock skew: 23.7 +- 0.5 ppm	1
+Clock skew: 23.9 +- 0.8 ppm	1.6
+Clock skew: 25.3 +- 1.0 ppm	10.6
+IPv6: 2001:db8::2	2.6
+IPv6: 2001:db8::3	9.6
+COMPARE
+
+
 echo "NAT: broken"
 ../linking.py -g nat_broken.gml "SIP account: Alice" -s 3 > "$TMPFILE"
 
@@ -352,6 +374,14 @@ echo "L7 names aliases active - resources"
 diff "$TMPFILE" - <<- COMPARE
 IRC channel: foo
 receiver e-mail: alice@example.com
+COMPARE
+
+echo "L7 names aliases active - resources (print inaccuracy)"
+../linking.py -I -g l7ids.gml -s 7 "IRC nickname: Alice" -i 1 -a / -s 6 > "$TMPFILE"
+
+diff "$TMPFILE" - <<- COMPARE
+IRC channel: foo	0
+receiver e-mail: alice@example.com	0
 COMPARE
 
 echo "L7 names aliases deactivated - resources"
