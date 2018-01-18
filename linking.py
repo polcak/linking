@@ -113,10 +113,10 @@ scope_help = """The linking scope (1-8):
    specific computer aka Identifiers of
    a specific computer.
 3~ Constraints revealing partial identities of
-   computers where specific user authenticated
-   or logged in.
+   computers where specific virtual person
+   authenticated or logged in.
 4~ Constraints revealing identifiers of all
-   users accessing specific resource.
+   virtual persons accessing specific resource.
 5~ Constraints revealing all user accounts
    logged in or authenticated from computer or
    set of computers.
